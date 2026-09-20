@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-badge">
+            <span class="badge-sparkle">✦</span> Deep Neural Network Inference
+        </div>
+        <h2 class="hero-title">CIFAR-10 Image Classification</h2>
+        <p class="hero-subtitle">
+            Upload an image and let our trained Artificial Neural Network identify what it sees across 10 distinct object classes in real time.
+        </p>
+        
+        <div class="tech-badges">
+            <span class="tech-pill"><span class="pill-icon">🧠</span> TensorFlow 2.x</span>
+            <span class="tech-pill"><span class="pill-icon">⚡</span> Flask Backend</span>
+            <span class="tech-pill"><span class="pill-icon">🔷</span> Dense ANN Model</span>
+            <span class="tech-pill"><span class="pill-icon">🎨</span> CIFAR-10 Dataset</span>
+        </div>
+    </section>
+
+    <!-- Error Alert Toast/Banner -->
+    <div class="error-banner hidden" id="errorBanner">
+        <div class="error-icon">⚠️</div>
+        <div class="error-content">
+            <h4 class="error-heading" id="errorHeading">Upload Error</h4>
+            <p class="error-message" id="errorMessage">Please select an image before predicting.</p>
+        </div>
+        <button type="button" class="error-dismiss" id="errorDismissBtn" aria-label="Dismiss error">✕</button>
+    </div>
+
+    <!-- Main 2-Column Application Layout -->
+    <div class="app-grid">
+        
+        <!-- Left Column: Input & Live Camera Panel -->
+        <div class="panel-card input-panel">
+            <div class="panel-header">
+                <div class="panel-title-group">
+                    <span class="panel-step">01</span>
+                    <h3 class="panel-title">Input Source</h3>
+                </div>
+                <!-- Input Mode Switcher -->
+                <div class="input-mode-tabs" role="tablist">
+                    <button type="button" class="mode-tab active" id="tabUploadMode" role="tab" aria-selected="true">
+                        📁 File Upload
+                    </button>
+                    <button type="button" class="mode-tab" id="tabCameraMode" role="tab" aria-selected="false">
+                        📹 Live Camera
+                    </button>
+                </div>
+            </div>
+
+            <!-- MODE 1: File Upload Form View -->
+            <div class="mode-view" id="uploadModeView">
+                <form id="predictionForm" enctype="multipart/form-data">
+                    <input type="file" id="fileInput" name="file" accept="image/png, image/jpeg, image/jpg, image/webp" class="hidden-file-input">
+                    
+                    <!-- Dropzone Area -->
+                    <div class="dropzone" id="dropzone">
+                        <div class="dropzone-idle" id="dropzoneIdle">
+                            <div class="upload-icon-wrapper">
+                                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                            </div>
+                            <p class="dropzone-primary-text">Drop your image here</p>
+                            <p class="dropzone-divider"><span>or</span></p>
+                            <div class="dropzone-buttons">
+                                <button type="button" class="btn btn-outline" id="browseBtn">
+                                    📁 Browse Image
+                                </button>
+                                <button type="button" class="btn btn-camera" id="switchDirectCameraBtn">
+                                    📹 Switch to Camera
+                                </button>
+                            </div>
+                            <p class="dropzone-hint">Supported formats: JPG, JPEG, PNG, WEBP (Max 5 MB)</p>
+                        </div>
+
+                        <!-- Selected Image Preview Card -->
+                        <div class="dropzone-preview hidden" id="dropzonePreview">
+                            <div class="preview-image-container">
+                                <img id="previewImg" src="" alt="Uploaded image preview" class="preview-img">
+                                <div class="preview-overlay">
+                                    <span class="preview-resolution" id="previewResolution">-- × --</span>
+                                </div>
+                            </div>
+                            <div class="preview-details">
+                                <div class="preview-meta">
+                                    <span class="preview-filename" id="previewFilename">image.png</span>
+                                    <span class="preview-filesize" id="previewFilesize">-- KB</span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-ghost" id="changeImageBtn">
+                                    ↺ Change Image
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sample Test Images Gallery -->
+                    <div class="sample-gallery-section">
+                        <div class="sample-header">
+                            <span class="sample-title">Quick Test Samples</span>
+                            <span class="sample-hint">Click any image to test:</span>
+                        </div>
+                        <div class="sample-grid" id="sampleGrid">
+                            {% for name in classes %}
+                            <button type="button" class="sample-btn" data-class="{{ name }}" title="Test sample: {{ name|capitalize }}">
+                                <span class="sample-icon">{{ icons[name] }}</span>
+                                <span class="sample-label">{{ name|capitalize }}</span>
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Action Controls -->
+                    <div class="action-buttons">
+                        <button type="submit" class="btn btn-primary" id="predictBtn" disabled>
+                            <span class="btn-spinner hidden" id="btnSpinner"></span>
+                            <span class="btn-label" id="btnLabel">✦ Predict Image</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="clearBtn">
+                            ✕ Clear
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- MODE 2: Continuous Real-Time Live Webcam View -->
+            <div class="mode-view hidden" id="cameraModeView">
+                <div class="live-camera-card">
+                    
+                    <!-- Viewport Container -->
+                    <div class="live-video-viewport" id="liveVideoViewport">
+                        <video id="liveVideo" autoplay playsinline muted class="live-video-element"></video>
+                        
+                        <!-- Offline / Start Camera Placeholder -->
+                        <div class="camera-off-overlay" id="cameraOffOverlay">
+                            <div class="camera-off-icon">📹</div>
+                            <h4 class="camera-off-title">Laptop Camera Ready</h4>
+                            <p class="camera-off-desc">Click Start Camera to turn on your webcam and enable real-time continuous classification.</p>
+                            <button type="button" class="btn btn-camera-launch" id="startLiveStreamBtn">
+                                🟢 Turn On Laptop Camera
+                            </button>
+                        </div>
+
+                        <!-- Targeting Frame & AI Crosshairs (when live) -->
+                        <div class="live-viewfinder-overlay hidden" id="liveViewfinder">
+                            <div class="live-viewfinder-box">
+                                <div class="vf-corner tl"></div>
+                                <div class="vf-corner tr"></div>
+                                <div class="vf-corner bl"></div>
+                                <div class="vf-corner br"></div>
+                                <div class="vf-scanline"></div>
+                                <div class="vf-cross"></div>
+                            </div>
+                            <div class="live-stream-badge">
+                                <span class="live-pulse-dot"></span>
+                                <span id="liveStatusText">LIVE AI STREAMING</span>
+                            </div>
+                        </div>
+
+                        <!-- Hidden canvas used for continuous frame sampling -->
+                        <canvas id="liveCanvas" class="hidden"></canvas>
+                    </div>
+
+                    <!-- Camera Source & Controls Toolbar -->
+                    <div class="camera-toolbar">
+                        <div class="camera-select-wrapper">
+                            <label for="cameraSelect" class="camera-toolbar-label">Camera:</label>
+                            <select id="cameraSelect" class="camera-select-dropdown">
+                                <option value="">Default Laptop Camera</option>
+                            </select>
+                        </div>
+
+                        <button type="button" class="btn btn-sm btn-ghost" id="flipLiveCameraBtn" title="Flip / Mirror Camera">
+                            🔄 Mirror Feed
+                        </button>
+                    </div>
+
+                    <!-- Real-Time Continuous Controls -->
+                    <div class="live-action-buttons">
+                        <button type="button" class="btn btn-live-toggle" id="toggleLivePredictBtn" disabled>
+                            <span class="live-btn-icon">⚡</span>
+                            <span id="toggleLivePredictLabel">Continuous Prediction: Active</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" id="stopCameraBtn" disabled>
+                            ⏹ Turn Off Camera
+                        </button>
+                    </div>
+
+                    <!-- Live Inference Stats Bar -->
+                    <div class="live-stats-bar">
+                        <div class="live-stat-item">
+                            <span class="stat-lbl">Inference Interval</span>
+                            <span class="stat-val" id="streamIntervalVal">~400 ms</span>
+                        </div>
+                        <div class="live-stat-item">
+                            <span class="stat-lbl">Stream Status</span>
+                            <span class="stat-val text-success" id="streamStatusVal">Ready to Start</span>
+                        </div>
+                        <div class="live-stat-item">
+                            <span class="stat-lbl">Target Resolution</span>
+                            <span class="stat-val">32×32 RGB</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Inference & Prediction Result Panel -->
+        <div class="panel-card result-panel">
+            <div class="panel-header">
+                <div class="panel-title-group">
+                    <span class="panel-step">02</span>
+                    <h3 class="panel-title">Inference Analysis</h3>
+                </div>
+                <span class="panel-badge" id="inferenceBadge">Awaiting Input</span>
+            </div>
+
+            <!-- Idle Placeholder State -->
+            <div class="result-state-view" id="idleState">
+                <div class="idle-graphic">
+                    <div class="pulse-ring"></div>
+                    <div class="neural-node">🧠</div>
+                </div>
+                <h4 class="state-title">Ready for Classification</h4>
+                <p class="state-desc">
+                    Upload an image or pick a quick test sample on the left, then click <strong>Predict Image</strong> to trigger inference across our ANN model layers.
+                </p>
+                <div class="cifar-class-pills">
+                    {% for name in classes %}
+                    <span class="mini-class-pill">{{ icons[name] }} {{ name }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Loading Inference State -->
+            <div class="result-state-view hidden" id="loadingState">
+                <div class="inference-loader">
+                    <div class="loader-scanner"></div>
+                    <div class="loader-brain">⚡</div>
+                </div>
+                <h4 class="state-title">Processing Neural Inference...</h4>
+                <p class="state-desc">
+                    Normalizing input to 32×32 RGB float32 array and propagating activations through 512 → 256 → 128 dense layers.
+                </p>
+                <div class="loading-bar-wrapper">
+                    <div class="loading-bar-fill"></div>
+                </div>
+            </div>
+
+            <!-- Active Prediction Result View -->
+            <div class="result-content hidden" id="resultContent">
+                
+                <!-- Primary Prediction Card -->
+                <div class="primary-result-card" id="primaryResultCard">
+                    <div class="result-spotlight"></div>
+                    <div class="result-top-badge">Top Classification</div>
+                    <div class="result-hero-icon" id="resultHeroIcon">🐶</div>
+                    <h3 class="result-class-name" id="resultClassName">DOG</h3>
+                    <div class="confidence-gauge">
+                        <div class="confidence-val" id="resultConfidence">72.45%</div>
+                        <span class="confidence-label">Model Confidence</span>
+                    </div>
+                </div>
+
+                <!-- Top-3 Podium Rankings -->
+                <div class="section-block">
+                    <h4 class="section-title">Top 3 Candidates</h4>
+                    <div class="top3-podium" id="top3Podium">
+                        <!-- Populated dynamically by app.js -->
+                    </div>
+                </div>
+
+                <!-- All 10 Class Probabilities Breakdown -->
+                <div class="section-block">
+                    <div class="section-header-row">
+                        <h4 class="section-title">All Class Probabilities</h4>
+                        <span class="section-subtitle">Softmax Distribution</span>
+                    </div>
+                    <div class="probability-list" id="probabilityList">
+                        <!-- Populated dynamically by app.js with animated bars -->
+                    </div>
+                </div>
+
+                <!-- Model Diagnostics Info -->
+                <div class="diagnostics-card">
+                    <div class="diag-header">
+                        <span class="diag-icon">⚙️</span>
+                        <span class="diag-title">Inference Pipeline Summary</span>
+                    </div>
+                    <div class="diag-grid">
+                        <div class="diag-item">
+                            <span class="diag-lbl">Input Shape</span>
+                            <span class="diag-val">(1, 32, 32, 3)</span>
+                        </div>
+                        <div class="diag-item">
+                            <span class="diag-lbl">Normalization</span>
+                            <span class="diag-val">float32 / 255.0</span>
+                        </div>
+                        <div class="diag-item">
+                            <span class="diag-lbl">Architecture</span>
+                            <span class="diag-val">ANN (512-256-128)</span>
+                        </div>
+                        <div class="diag-item">
+                            <span class="diag-lbl">Classes</span>
+                            <span class="diag-val">10 CIFAR Classes</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
