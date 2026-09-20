@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}CIFAR Vision — AI-Powered CIFAR-10 Image Classification{% endblock %}</title>
+    
+    <!-- Meta SEO -->
+    <meta name="description" content="Production-ready deep learning web app for CIFAR-10 image classification powered by an Artificial Neural Network (ANN) and Flask.">
+    <meta name="keywords" content="CIFAR-10, Machine Learning, Deep Learning, Image Classification, Flask, TensorFlow, Neural Network">
+    <meta name="author" content="CIFAR Vision Team">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-background">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+
+    <!-- Header Navigation -->
+    <header class="app-header" id="appHeader">
+        <div class="header-container">
+            <div class="brand-group">
+                <div class="brand-logo">
+                    <span class="logo-icon">⚡</span>
+                </div>
+                <div class="brand-text">
+                    <h1 class="brand-title">CIFAR Vision</h1>
+                    <span class="brand-tagline">AI-Powered CIFAR-10 Image Classification</span>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <div class="system-status {% if model_loaded %}status-online{% else %}status-offline{% endif %}" id="systemStatusBadge" title="Inference Engine Health">
+                    <span class="status-dot"></span>
+                    <span class="status-label" id="statusLabel">{% if model_loaded %}Model Online{% else %}Model Offline{% endif %}</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-wrapper">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <p>© 2026 CIFAR Vision · Built with Flask, TensorFlow, and Deep Learning ANN</p>
+            <div class="footer-links">
+                <a href="/health" target="_blank" class="footer-link">Health API</a>
+                <span class="link-divider">·</span>
+                <span class="tech-tag">CIFAR-10 (32×32 RGB)</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>
