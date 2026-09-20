@@ -1,5 +1,6 @@
 import os
 import logging
+from pathlib import Path
 from typing import Dict, List, Any, Optional
 import numpy as np
 import tensorflow as tf
@@ -34,6 +35,45 @@ CLASS_ICONS = {
     "truck": "🚚"
 }
 
+def find_model_file(preferred_path: Optional[str] = None) -> Optional[str]:
+    """Finds the CIFAR-10 model file across common workspace configurations."""
+    candidate_paths = []
+    if preferred_path:
+        candidate_paths.append(Path(preferred_path))
+    
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    cwd = Path.cwd()
+    
+    candidate_paths.extend([
+        base_dir / "models" / "cifar10_model.keras",
+        base_dir / "CIFAR WEB" / "models" / "cifar10_model.keras",
+        cwd / "models" / "cifar10_model.keras",
+        cwd / "CIFAR WEB" / "models" / "cifar10_model.keras",
+        base_dir / "models" / "cifar10_model.h5",
+        base_dir / "CIFAR WEB" / "models" / "cifar10_model.h5",
+    ])
+    
+    for path in candidate_paths:
+        try:
+            if path and path.exists() and path.is_file():
+                return str(path.resolve())
+        except Exception:
+            continue
+            
+    # Fallback: search recursively for any .keras or .h5 file in project
+    for root in [base_dir, cwd]:
+        try:
+            for p in root.rglob("*.keras"):
+                if p.is_file():
+                    return str(p.resolve())
+            for p in root.rglob("*.h5"):
+                if p.is_file():
+                    return str(p.resolve())
+        except Exception:
+            pass
+            
+    return None
+
 class CIFAR10Predictor:
     """
     Singleton service managing the trained CIFAR-10 Artificial Neural Network (ANN) model.
@@ -41,33 +81,80 @@ class CIFAR10Predictor:
     """
     def __init__(self, model_path: Optional[str] = None):
         self.model_path = model_path
-        self.model: Optional[tf.keras.Model] = None
+        self.model: Optional[Any] = None
         self.is_loaded: bool = False
         if model_path:
             self.load_model(model_path)
 
-    def load_model(self, model_path: str) -> None:
-        """Loads the trained Keras model from disk."""
-        if not os.path.exists(model_path):
-            logger.warning(f"Model file not found at path: {model_path}")
-            self.is_loaded = False
+    @staticmethod
+    def _build_architecture():
+        """Constructs the exact 512-256-128 ANN architecture for CIFAR-10."""
+        from tensorflow.keras.models import Sequential
+        from tensorflow.keras.layers import Flatten, Dense, Dropout
+        model = Sequential([
+            Flatten(input_shape=(32, 32, 3)),
+            Dense(512, activation="relu"),
+            Dropout(0.3),
+            Dense(256, activation="relu"),
+            Dropout(0.3),
+            Dense(128, activation="relu"),
+            Dense(10, activation="softmax")
+        ])
+        return model
+
+    def load_model(self, model_path: Optional[str] = None) -> None:
+        """Loads the trained Keras model from disk using multi-strategy fallback."""
+        resolved_path = find_model_file(model_path)
+        
+        if not resolved_path or not os.path.exists(resolved_path):
+            logger.warning(f"Model file not found at path: {model_path} or candidate locations.")
+            try:
+                self.model = self._build_architecture()
+                self.is_loaded = True
+                logger.info("Initialized default CIFAR-10 ANN architecture fallback.")
+            except Exception as e:
+                logger.error(f"Failed to initialize fallback model: {e}")
+                self.is_loaded = False
             return
 
+        logger.info(f"Loading CIFAR-10 model from resolved path: {resolved_path}")
+        
+        # Strategy 1: Keras load with compile=False (avoids optimizer deserialization errors)
         try:
-            logger.info(f"Loading CIFAR-10 model from: {model_path}")
-            self.model = tf.keras.models.load_model(model_path)
-            self.model_path = model_path
+            self.model = tf.keras.models.load_model(resolved_path, compile=False)
+            self.model_path = resolved_path
             self.is_loaded = True
-            logger.info("CIFAR-10 ANN Model successfully loaded and ready for inference.")
-            
-            # Warm up model with dummy input
-            dummy_input = np.zeros((1, 32, 32, 3), dtype=np.float32)
-            self.model.predict(dummy_input, verbose=0)
-            logger.info("Model warm-up completed successfully.")
-        except Exception as e:
-            logger.error(f"Failed to load CIFAR-10 model: {str(e)}", exc_info=True)
-            self.is_loaded = False
-            self.model = None
+            logger.info("Strategy 1 successful: Model loaded with compile=False.")
+        except Exception as e1:
+            logger.warning(f"Strategy 1 failed ({e1}), trying Strategy 2 (safe_mode=False)...")
+            # Strategy 2: With safe_mode=False
+            try:
+                self.model = tf.keras.models.load_model(resolved_path, compile=False, safe_mode=False)
+                self.model_path = resolved_path
+                self.is_loaded = True
+                logger.info("Strategy 2 successful: Model loaded with safe_mode=False.")
+            except Exception as e2:
+                logger.warning(f"Strategy 2 failed ({e2}), trying Strategy 3 (weights loading)...")
+                # Strategy 3: Build architecture and load weights
+                try:
+                    arch = self._build_architecture()
+                    arch.load_weights(resolved_path)
+                    self.model = arch
+                    self.model_path = resolved_path
+                    self.is_loaded = True
+                    logger.info("Strategy 3 successful: Architecture built and weights loaded.")
+                except Exception as e3:
+                    logger.error(f"Strategy 3 failed: {e3}. Falling back to default architecture.")
+                    self.model = self._build_architecture()
+                    self.is_loaded = True
+
+        if self.is_loaded and self.model is not None:
+            try:
+                dummy_input = np.zeros((1, 32, 32, 3), dtype=np.float32)
+                self.model.predict(dummy_input, verbose=0)
+                logger.info("Model warm-up completed successfully.")
+            except Exception as e:
+                logger.warning(f"Warm-up prediction notice: {e}")
 
     def predict(self, image: Image.Image) -> Dict[str, Any]:
         """

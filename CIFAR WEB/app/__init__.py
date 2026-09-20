@@ -33,13 +33,10 @@ def create_app(config_name: str = "default") -> Flask:
 
     # 3. Initialize Model Predictor Service
     model_path = app.config.get("MODEL_PATH")
-    if model_path and os.path.exists(model_path):
+    try:
         predictor_service.load_model(model_path)
-    else:
-        app.logger.warning(
-            f"Model path does not exist at startup: {model_path}. "
-            "Predictor service will be loaded once model file is available."
-        )
+    except Exception as e:
+        app.logger.error(f"Error initializing predictor service at startup: {e}")
 
     # 4. Register Blueprints
     from app.routes.prediction import prediction_bp
