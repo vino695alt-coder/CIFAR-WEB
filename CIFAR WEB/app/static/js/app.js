@@ -279,11 +279,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: formData
             });
 
-            const data = await response.json();
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (jsonErr) {
+                throw new Error(`Server returned error (${response.status}: ${response.statusText || "Inference error"})`);
+            }
+
             const elapsed = Math.round(performance.now() - startTime);
 
-            if (!response.ok || !data.success) {
-                throw new Error(data.error || "Prediction request failed.");
+            if (!response.ok || !data || !data.success) {
+                throw new Error((data && data.error) ? data.error : "Prediction request failed.");
             }
 
             renderResults(data, elapsed);

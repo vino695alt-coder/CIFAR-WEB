@@ -151,7 +151,7 @@ class CIFAR10Predictor:
         if self.is_loaded and self.model is not None:
             try:
                 dummy_input = np.zeros((1, 32, 32, 3), dtype=np.float32)
-                self.model.predict(dummy_input, verbose=0)
+                _ = self.model(dummy_input, training=False)
                 logger.info("Model warm-up completed successfully.")
             except Exception as e:
                 logger.warning(f"Warm-up prediction notice: {e}")
@@ -159,29 +159,6 @@ class CIFAR10Predictor:
     def predict(self, image: Image.Image) -> Dict[str, Any]:
         """
         Executes end-to-end inference on a PIL image.
-        
-        Returns a structured dictionary:
-        {
-            "success": True,
-            "prediction": {
-                "class_name": "dog",
-                "class_index": 5,
-                "icon": "🐶",
-                "confidence": 72.45
-            },
-            "top_predictions": [
-                {"class_name": "dog", "class_index": 5, "icon": "🐶", "confidence": 72.45},
-                ...
-            ],
-            "probabilities": {
-                "airplane": 1.2,
-                ...
-            },
-            "all_classes_sorted": [
-                {"class_name": "dog", "class_index": 5, "icon": "🐶", "confidence": 72.45},
-                ...
-            ]
-        }
         """
         if not self.is_loaded or self.model is None:
             raise RuntimeError("Model is not loaded or unavailable.")
@@ -189,11 +166,18 @@ class CIFAR10Predictor:
         # 1. Preprocess image
         input_array = preprocess_for_inference(image)
 
-        # 2. Run inference
-        raw_predictions = self.model.predict(input_array, verbose=0)[0]
+        # 2. Run direct forward pass (ultra-fast, zero-overhead, thread-safe)
+        try:
+            tensor_output = self.model(input_array, training=False)
+            if hasattr(tensor_output, "numpy"):
+                raw_predictions = tensor_output.numpy()[0]
+            else:
+                raw_predictions = np.asarray(tensor_output)[0]
+        except Exception:
+            raw_predictions = self.model.predict(input_array, verbose=0)[0]
         
         # 3. Probabilities as percentages rounded to 2 decimals
-        probs_pct = (raw_predictions * 100.0).tolist()
+        probs_pct = [float(p) * 100.0 for p in raw_predictions]
 
         # 4. Top prediction
         top_idx = int(np.argmax(raw_predictions))
