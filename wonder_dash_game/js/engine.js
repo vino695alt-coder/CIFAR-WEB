@@ -772,7 +772,20 @@ class WonderEngine {
           this.isSliding = false;
         }
         if (Math.random() < 0.4) {
-          this.triggerSparkBurst(this.playerMesh.position.x + (Math.random() * 0.4 - 0.2), 0.15, this.playerMesh.position.z + 0.3, 0xf39c12);
+          this.triggerSparkBurst(this.playerMesh.position.x + (Math.random() * 0.4 - 0.2), 0.15, this.playerMesh.position.z + 0.3, 0xf39c12, 4);
+        }
+      } else if (this.isGrounded) {
+        // Magical Stardust Footstep Trail behind sneakers
+        if (Math.random() < 0.65) {
+          const isLeo = this.characterId === "leo";
+          const trailColor = isLeo ? (Math.random() < 0.5 ? 0xf43f5e : 0xf1c40f) : 0x00f0ff;
+          this.triggerSparkBurst(
+            this.playerMesh.position.x + (Math.random() * 0.32 - 0.16),
+            0.12,
+            this.playerMesh.position.z + 0.35,
+            trailColor,
+            isLeo ? 3 : 2
+          );
         }
       }
     }
@@ -1099,6 +1112,105 @@ class WonderEngine {
         this.spawnGem(this.targetLaneX, 0.8, this.playerMesh.position.z - i * 4);
       }
     }
+  }
+
+  initWeatherParticles() {
+    if (this.weatherEmitter) {
+      this.particlesGroup.remove(this.weatherEmitter);
+      this.weatherEmitter = null;
+    }
+
+    const particleCount = 140;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+
+    const world = WONDER_CONFIG.WORLDS.find(w => w.id === this.worldId) || WONDER_CONFIG.WORLDS[0];
+    const baseCol = new THREE.Color(world.accentColor || 0xfbbf24);
+
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 24;
+      positions[i * 3 + 1] = Math.random() * 12 + 0.5;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 60;
+
+      const c = (Math.random() > 0.5) ? baseCol : new THREE.Color(0xffffff);
+      colors[i * 3] = c.r;
+      colors[i * 3 + 1] = c.g;
+      colors[i * 3 + 2] = c.b;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.35,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending
+    });
+
+    this.weatherEmitter = new THREE.Points(geometry, material);
+    this.particlesGroup.add(this.weatherEmitter);
+  }
+
+  updateWeatherParticles(dt) {
+    if (!this.weatherEmitter) return;
+    const positions = this.weatherEmitter.geometry.attributes.position.array;
+    const count = positions.length / 3;
+    const refZ = this.playerMesh ? this.playerMesh.position.z : 0;
+
+    for (let i = 0; i < count; i++) {
+      positions[i * 3 + 1] += Math.sin(Date.now() * 0.002 + i) * dt * 0.4;
+      positions[i * 3] += Math.cos(Date.now() * 0.0015 + i) * dt * 0.2;
+
+      if (this.isRunning && !this.isPaused) {
+        if (positions[i * 3 + 2] > refZ + 15) {
+          positions[i * 3 + 2] = refZ - 45 - Math.random() * 15;
+          positions[i * 3] = (Math.random() - 0.5) * 20;
+          positions[i * 3 + 1] = Math.random() * 10 + 0.5;
+        }
+      }
+    }
+    this.weatherEmitter.geometry.attributes.position.needsUpdate = true;
+  }
+
+  triggerSparkBurst(x, y, z, colorHex = 0xf1c40f, count = 12) {
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    const vel = [];
+
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = x;
+      pos[i * 3 + 1] = y;
+      pos[i * 3 + 2] = z;
+
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 5.0 + 2.0;
+      vel.push({
+        vx: Math.cos(angle) * speed,
+        vy: Math.random() * 5.0 + 2.0,
+        vz: Math.sin(angle) * speed * 0.6
+      });
+    }
+
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+    const mat = new THREE.PointsMaterial({
+      color: new THREE.Color(colorHex),
+      size: 0.38,
+      transparent: true,
+      opacity: 1.0,
+      blending: THREE.AdditiveBlending
+    });
+
+    const ps = new THREE.Points(geo, mat);
+    ps.vel = vel;
+    ps.life = 0.45;
+    ps.maxLife = 0.45;
+
+    this.particlesGroup.add(ps);
+    this.particleSystems.push(ps);
   }
 
   updateParticles(dt) {

@@ -112,8 +112,15 @@ class WonderApp {
     const modal = document.getElementById("dialog-hero-info");
     if (!modal) return;
 
-    document.getElementById("hero-info-icon").innerText = char.skins[0].icon;
-    document.getElementById("hero-info-title").innerText = `${char.name} the ${char.title}`;
+    const iconEl = document.getElementById("hero-info-icon");
+    if (iconEl) {
+      if (char.avatarImg) {
+        iconEl.innerHTML = `<img src="${char.avatarImg}" alt="${char.name}" style="width: 58px; height: 58px; border-radius: 50%; object-fit: cover; border: 2px solid var(--color-gold);">`;
+      } else {
+        iconEl.innerText = char.skins[0].icon;
+      }
+    }
+    document.getElementById("hero-info-title").innerText = `${char.name} - ${char.title}`;
     document.getElementById("hero-info-role").innerText = isUnlocked ? "✓ Unlocked Hero" : `🔒 Unlock for 🪙 ${char.costCoins.toLocaleString()}`;
     document.getElementById("hero-info-desc").innerText = char.description;
     document.getElementById("hero-info-perk").innerText = `✨ ${char.perk.name}: ${char.perk.desc}`;
@@ -623,8 +630,8 @@ class WonderApp {
 
       card.innerHTML = `
         <div class="char-header" style="background: linear-gradient(135deg, ${char.baseColor}, ${char.secondaryColor})">
-          <div class="char-avatar-ring">
-            <span class="char-avatar-emoji">${char.skins[0].icon}</span>
+          <div class="char-avatar-ring" style="overflow: hidden; position: relative;">
+            ${char.avatarImg ? `<img src="${char.avatarImg}" alt="${char.name}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">` : `<span class="char-avatar-emoji">${char.skins[0].icon}</span>`}
           </div>
           <div class="char-title-block">
             <h3>${char.name}</h3>

@@ -189,7 +189,162 @@ const WonderModels = {
     });
 
     // 3. CHARACTER UNIQUE TRAITS & COSTUMES
-    if (characterId === "milo") {
+    if (characterId === "leo") {
+      // Leo: Star Wizard Apprentice - Royal Purple Drooping Wizard Hat with Golden Tiara Crest,
+      // Amethyst Gem, Flowing Coral Ribbon Scarf, Cobalt Blue Jumpsuit, and Starlight Sneakers
+      
+      // 1. TUNIC ACCESSORIES: Purple Belt & Shiny Gold Chest Buttons
+      const matBelt = new THREE.MeshStandardMaterial({ color: 0x9333ea, roughness: 0.3 });
+      const beltMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.44, 0.12, 16), matBelt);
+      beltMesh.position.set(0, 0.48, 0);
+      bodyPivot.add(beltMesh);
+
+      const buckleMesh = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.06), matGold);
+      buckleMesh.position.set(0, 0.48, 0.42);
+      bodyPivot.add(buckleMesh);
+
+      // Gold Chest Buttons
+      [0.62, 0.76].forEach(y => {
+        const btn = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 8), matGold);
+        btn.position.set(0, y, 0.42);
+        bodyPivot.add(btn);
+      });
+
+      // 2. HEAD: Peach Cartoon Skin & Dark Chocolate Anime Hair
+      const matSkin = new THREE.MeshStandardMaterial({
+        color: 0xffd8be,
+        roughness: 0.35,
+        emissive: 0xffd8be,
+        emissiveIntensity: 0.12
+      });
+      const matHair = new THREE.MeshStandardMaterial({
+        color: 0x451a03,
+        roughness: 0.38,
+        emissive: 0x271202,
+        emissiveIntensity: 0.18
+      });
+
+      headMesh.material = matSkin;
+      muzzleMesh.visible = false; // Hide animal snout for human hero
+      noseMesh.position.set(0, -0.02, 0.46);
+      noseMesh.scale.set(0.6, 0.6, 0.6);
+      noseMesh.material = new THREE.MeshStandardMaterial({ color: 0xffa07a, roughness: 0.5 });
+
+      // Joyful anime smile
+      const mouthGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.04, 12, 1, false, 0, Math.PI);
+      const mouthMat = new THREE.MeshBasicMaterial({ color: 0x881337 });
+      const mouth = new THREE.Mesh(mouthGeo, mouthMat);
+      mouth.position.set(0, -0.16, 0.44);
+      mouth.rotation.x = Math.PI / 2;
+      headPivot.add(mouth);
+
+      const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.02), matEyeWhite);
+      tooth.position.set(0, -0.13, 0.46);
+      headPivot.add(tooth);
+
+      // Cute Peach Round Ears
+      [-0.42, 0.42].forEach(x => {
+        const ear = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 10), matSkin);
+        ear.scale.set(0.4, 0.9, 0.7);
+        ear.position.set(x, 0.04, 0);
+        ear.rotation.y = x > 0 ? 0.2 : -0.2;
+        headPivot.add(ear);
+      });
+
+      // Anime Hair Bangs / Fringe
+      const bangsGroup = new THREE.Group();
+      [-0.24, -0.12, 0, 0.12, 0.24].forEach((x, i) => {
+        const strand = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.32, 8), matHair);
+        strand.position.set(x, 0.22, 0.4 - Math.abs(x) * 0.1);
+        strand.rotation.set(0.35, 0, (i - 2) * -0.18);
+        bangsGroup.add(strand);
+      });
+      headPivot.add(bangsGroup);
+
+      // Back Hair Tufts
+      const backHair = new THREE.Mesh(new THREE.SphereGeometry(0.47, 14, 14, 0, Math.PI * 2, Math.PI * 0.4, Math.PI * 0.6), matHair);
+      backHair.position.set(0, 0, -0.05);
+      headPivot.add(backHair);
+
+      // 3. ROYAL VIOLET WIZARD HAT & GOLDEN TIARA CROWN
+      const matWizardHat = new THREE.MeshStandardMaterial({
+        color: (skinId === "celestial_prince") ? 0xf59e0b : ((skinId === "shadow_alchemist") ? 0x1e1b4b : 0x7c3aed),
+        emissive: (skinId === "celestial_prince") ? 0xd97706 : ((skinId === "shadow_alchemist") ? 0x4c1d95 : 0x6d28d9),
+        emissiveIntensity: 0.35,
+        roughness: 0.28,
+        metalness: 0.1
+      });
+
+      // Hat Brim / Visor
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.64, 0.08, 20), matWizardHat);
+      brim.position.set(0, 0.36, 0.05);
+      brim.rotation.x = -0.12;
+      headPivot.add(brim);
+
+      // Main Hat Cone curving backwards
+      const hatMain = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.56, 0.55, 18), matWizardHat);
+      hatMain.position.set(0, 0.62, -0.02);
+      hatMain.rotation.x = -0.25;
+      headPivot.add(hatMain);
+
+      const hatCurve = new THREE.Mesh(new THREE.ConeGeometry(0.36, 0.65, 16), matWizardHat);
+      hatCurve.position.set(0, 0.95, -0.26);
+      hatCurve.rotation.x = -0.85;
+      headPivot.add(hatCurve);
+
+      // Hat Tip with Golden Bauble & Amethyst Pompom
+      const hatTip = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 10), matGold);
+      hatTip.position.set(0, 0.85, -0.62);
+      headPivot.add(hatTip);
+
+      const hatGem = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.08),
+        new THREE.MeshStandardMaterial({ color: 0xd946ef, emissive: 0xc084fc, emissiveIntensity: 0.9 })
+      );
+      hatGem.position.set(0, 0.72, -0.68);
+      headPivot.add(hatGem);
+
+      // Golden Crown Tiara on Front of Hat
+      const tiaraBase = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.54, 0.14, 20, 1, true, 0, Math.PI), matGold);
+      tiaraBase.position.set(0, 0.44, 0.12);
+      tiaraBase.rotation.set(-0.15, Math.PI / 2, 0);
+      headPivot.add(tiaraBase);
+
+      const tiaraCrest = new THREE.Mesh(new THREE.ConeGeometry(0.14, 0.28, 5), matGold);
+      tiaraCrest.position.set(0, 0.62, 0.38);
+      tiaraCrest.rotation.x = -0.15;
+      headPivot.add(tiaraCrest);
+
+      // Inlaid Glowing Amethyst Jewel
+      const tiaraJewel = new THREE.Mesh(
+        new THREE.SphereGeometry(0.075, 10, 10),
+        new THREE.MeshStandardMaterial({ color: 0xd946ef, emissive: 0xd946ef, emissiveIntensity: 0.85, roughness: 0.1 })
+      );
+      tiaraJewel.position.set(0, 0.56, 0.46);
+      headPivot.add(tiaraJewel);
+
+      // 4. FLOWING CORAL-ORANGE MAGICAL SCARF
+      scarfPivot.position.set(0, 0.98, 0.05);
+      const scarfMat = new THREE.MeshStandardMaterial({
+        color: 0xff7875,
+        emissive: 0xf97316,
+        emissiveIntensity: 0.55,
+        roughness: 0.35
+      });
+      const scarfCollar = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.09, 10, 20), scarfMat);
+      scarfCollar.rotation.x = Math.PI / 2;
+      scarfPivot.add(scarfCollar);
+
+      // Fluttering Ribbon Tails
+      [-0.14, 0.14].forEach((x, i) => {
+        const ribbon = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.65, 0.04), scarfMat);
+        ribbon.position.set(x * 1.5, -0.28, -0.28);
+        ribbon.rotation.set(0.65, x * 0.8, (i === 0 ? -0.2 : 0.2));
+        scarfPivot.add(ribbon);
+      });
+      bodyPivot.add(scarfPivot);
+
+    } else if (characterId === "milo") {
       // Milo: Fox Ears & Golden Aviator Goggles & Flowing Red Scarf
       [-0.25, 0.25].forEach(x => {
         const earGeo = new THREE.ConeGeometry(0.19, 0.42, 10);
@@ -447,44 +602,157 @@ const WonderModels = {
     }
 
     // 4. ARTICULATED LEGS & ARMS
-    const limbMat = (characterId === "coco") ? matDark : matBase;
-    const footMat = (characterId === "coco") ? matDark : (characterId === "milo" ? matDark : matSec);
+    if (characterId === "leo") {
+      // Specialized Starlight Wizard Running Sneakers
+      const matSneakerBody = new THREE.MeshStandardMaterial({
+        color: (skinId === "celestial_prince") ? 0xf59e0b : ((skinId === "shadow_alchemist") ? 0x1e1b4b : 0x7c3aed),
+        emissive: (skinId === "celestial_prince") ? 0xd97706 : ((skinId === "shadow_alchemist") ? 0x4c1d95 : 0x5b21b6),
+        emissiveIntensity: 0.35,
+        roughness: 0.3
+      });
+      const matNeonSole = new THREE.MeshStandardMaterial({
+        color: (skinId === "celestial_prince") ? 0x00f0ff : 0xf43f5e,
+        emissive: (skinId === "celestial_prince") ? 0x00f0ff : 0xf43f5e,
+        emissiveIntensity: 0.95,
+        roughness: 0.1
+      });
+      const matSock = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.4
+      });
+      const matCuff = new THREE.MeshStandardMaterial({
+        color: (skinId === "celestial_prince") ? 0xfbbf24 : 0xf97316,
+        roughness: 0.4
+      });
 
-    // Left Leg
-    leftLeg.position.set(-0.2, 0.35, 0);
-    const lLegMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.35, 10), limbMat);
-    lLegMesh.position.y = -0.15;
-    leftLeg.add(lLegMesh);
-    const lFoot = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.13, 0.28), footMat);
-    lFoot.position.set(0, -0.3, 0.06);
-    leftLeg.add(lFoot);
+      // Left Leg
+      leftLeg.position.set(-0.2, 0.35, 0);
+      const lLegMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.32, 10), matBase);
+      lLegMesh.position.y = -0.14;
+      leftLeg.add(lLegMesh);
 
-    // Right Leg
-    rightLeg.position.set(0.2, 0.35, 0);
-    const rLegMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.35, 10), limbMat);
-    rLegMesh.position.y = -0.15;
-    rightLeg.add(rLegMesh);
-    const rFoot = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.13, 0.28), footMat);
-    rFoot.position.set(0, -0.3, 0.06);
-    rightLeg.add(rFoot);
+      // Orange cuff ring & White sock
+      const lCuff = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.035, 8, 14), matCuff);
+      lCuff.position.set(0, -0.22, 0);
+      lCuff.rotation.x = Math.PI / 2;
+      leftLeg.add(lCuff);
 
-    // Left Arm
-    leftArm.position.set(-0.42, 0.85, 0);
-    const lArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 10), limbMat);
-    lArmMesh.position.y = -0.15;
-    leftArm.add(lArmMesh);
-    const lHand = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 10), footMat);
-    lHand.position.set(0, -0.3, 0);
-    leftArm.add(lHand);
+      const lSock = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 12), matSock);
+      lSock.position.set(0, -0.26, 0);
+      leftLeg.add(lSock);
 
-    // Right Arm
-    rightArm.position.set(0.42, 0.85, 0);
-    const rArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 10), limbMat);
-    rArmMesh.position.y = -0.15;
-    rightArm.add(rArmMesh);
-    const rHand = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 10), footMat);
-    rHand.position.set(0, -0.3, 0);
-    rightArm.add(rHand);
+      // Sneaker upper
+      const lSneaker = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.32), matSneakerBody);
+      lSneaker.position.set(0, -0.32, 0.06);
+      leftLeg.add(lSneaker);
+
+      // Glowing Starlight Sole
+      const lSole = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.05, 0.34), matNeonSole);
+      lSole.position.set(0, -0.39, 0.06);
+      leftLeg.add(lSole);
+
+      // Golden Star Buckle on outside of left shoe
+      const lStar = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.04, 5), matGold);
+      lStar.position.set(-0.12, -0.32, 0.06);
+      lStar.rotation.z = Math.PI / 2;
+      leftLeg.add(lStar);
+
+      // Right Leg
+      rightLeg.position.set(0.2, 0.35, 0);
+      const rLegMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.32, 10), matBase);
+      rLegMesh.position.y = -0.14;
+      rightLeg.add(rLegMesh);
+
+      const rCuff = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.035, 8, 14), matCuff);
+      rCuff.position.set(0, -0.22, 0);
+      rCuff.rotation.x = Math.PI / 2;
+      rightLeg.add(rCuff);
+
+      const rSock = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.08, 12), matSock);
+      rSock.position.set(0, -0.26, 0);
+      rightLeg.add(rSock);
+
+      const rSneaker = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.14, 0.32), matSneakerBody);
+      rSneaker.position.set(0, -0.32, 0.06);
+      rightLeg.add(rSneaker);
+
+      const rSole = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.05, 0.34), matNeonSole);
+      rSole.position.set(0, -0.39, 0.06);
+      rightLeg.add(rSole);
+
+      const rStar = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.04, 5), matGold);
+      rStar.position.set(0.12, -0.32, 0.06);
+      rStar.rotation.z = -Math.PI / 2;
+      rightLeg.add(rStar);
+
+      // Arms with white gloves and star magic wand
+      leftArm.position.set(-0.42, 0.85, 0);
+      const lArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 10), matBase);
+      lArmMesh.position.y = -0.15;
+      leftArm.add(lArmMesh);
+      const lGlove = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 10), matSock);
+      lGlove.position.set(0, -0.3, 0);
+      leftArm.add(lGlove);
+
+      rightArm.position.set(0.42, 0.85, 0);
+      const rArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 10), matBase);
+      rArmMesh.position.y = -0.15;
+      rightArm.add(rArmMesh);
+      const rGlove = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 10), matSock);
+      rGlove.position.set(0, -0.3, 0);
+      rightArm.add(rGlove);
+
+      // Magic Wand in right hand
+      const wandStick = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.025, 0.38, 8), matGold);
+      wandStick.position.set(0.05, -0.28, 0.12);
+      wandStick.rotation.x = 0.6;
+      rightArm.add(wandStick);
+
+      const wandStar = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.06, 5), matGold);
+      wandStar.position.set(0.05, -0.14, 0.26);
+      wandStar.rotation.x = 0.6;
+      rightArm.add(wandStar);
+
+    } else {
+      const limbMat = (characterId === "coco") ? matDark : matBase;
+      const footMat = (characterId === "coco") ? matDark : (characterId === "milo" ? matDark : matSec);
+
+      // Left Leg
+      leftLeg.position.set(-0.2, 0.35, 0);
+      const lLegMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.35, 10), limbMat);
+      lLegMesh.position.y = -0.15;
+      leftLeg.add(lLegMesh);
+      const lFoot = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.13, 0.28), footMat);
+      lFoot.position.set(0, -0.3, 0.06);
+      leftLeg.add(lFoot);
+
+      // Right Leg
+      rightLeg.position.set(0.2, 0.35, 0);
+      const rLegMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.35, 10), limbMat);
+      rLegMesh.position.y = -0.15;
+      rightLeg.add(rLegMesh);
+      const rFoot = new THREE.Mesh(new THREE.BoxGeometry(0.19, 0.13, 0.28), footMat);
+      rFoot.position.set(0, -0.3, 0.06);
+      rightLeg.add(rFoot);
+
+      // Left Arm
+      leftArm.position.set(-0.42, 0.85, 0);
+      const lArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 10), limbMat);
+      lArmMesh.position.y = -0.15;
+      leftArm.add(lArmMesh);
+      const lHand = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 10), footMat);
+      lHand.position.set(0, -0.3, 0);
+      leftArm.add(lHand);
+
+      // Right Arm
+      rightArm.position.set(0.42, 0.85, 0);
+      const rArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.36, 10), limbMat);
+      rArmMesh.position.y = -0.15;
+      rightArm.add(rArmMesh);
+      const rHand = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 10), footMat);
+      rHand.position.set(0, -0.3, 0);
+      rightArm.add(rHand);
+    }
 
     // Assemble character hierarchy
     tailPivot.position.set(0, 0.4, 0);

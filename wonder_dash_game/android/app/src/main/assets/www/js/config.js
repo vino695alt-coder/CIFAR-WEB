@@ -294,8 +294,34 @@ const WONDER_CONFIG = {
     }
   ],
 
-  // 5 Original Cute Characters with Vibrant Saturated Colors
+  // 6 Original Cute Magical Characters with Vibrant Saturated Colors
   CHARACTERS: [
+    {
+      id: "leo",
+      name: "Leo",
+      title: "Star Magic Apprentice",
+      description: "Cheerful young wizard running with glowing starlight sneakers, golden crown tiara, and a flowing magical scarf!",
+      baseColor: "#2563eb",
+      secondaryColor: "#7c3aed",
+      accentColor: "#fbbf24",
+      unlocked: true,
+      costCoins: 0,
+      costGems: 0,
+      avatarImg: "assets/images/character_leo.jpg",
+      perk: {
+        name: "Stardust Velocity",
+        desc: "+30% All Power-Up Duration & +25% Speed Charm Boost",
+        magnetBonus: 0.15,
+        multiplierBonus: 0.20,
+        speedBonus: 0.15,
+        shieldBonus: 0.20
+      },
+      skins: [
+        { id: "classic", name: "Starlight Apprentice", icon: "🧙‍♂️", unlocked: true, costCoins: 0, costGems: 0 },
+        { id: "celestial_prince", name: "Celestial Prince", icon: "👑", unlocked: false, costCoins: 5000, costGems: 50 },
+        { id: "shadow_alchemist", name: "Shadow Alchemist", icon: "🔮", unlocked: false, costCoins: 10000, costGems: 100 }
+      ]
+    },
     {
       id: "milo",
       name: "Milo",

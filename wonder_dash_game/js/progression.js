@@ -34,8 +34,9 @@ class WonderProgressionSystem {
       selectedSkin: "classic",
 
       unlockedWorlds: ["enchanted_forest"],
-      unlockedCharacters: ["milo"],
+      unlockedCharacters: ["leo", "milo"],
       unlockedSkins: {
+        leo: ["classic"],
         milo: ["classic"]
       },
 
