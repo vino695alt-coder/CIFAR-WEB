@@ -561,37 +561,34 @@ class WonderApp {
       card.dataset.id = world.id;
 
       card.innerHTML = `
-        <div class="world-card-square-art">
-          <img src="${previewImg}" alt="${world.name}" class="world-card-square-img" onerror="this.style.display='none'">
-          <div class="world-card-art-gradient"></div>
-          <div class="world-card-icon-badge">${worldIcon}</div>
-          <div class="world-card-status-badge ${isSelected ? 'active-badge' : (isUnlocked ? 'unlocked-badge' : 'locked-badge')}">
-            ${isSelected ? '✨ Active' : (isUnlocked ? '✓ Ready' : `🔒 Lv.${world.unlockLevel}`)}
-          </div>
-          ${!isUnlocked ? `
-            <div class="world-card-lock-overlay">
-              <span class="world-lock-icon">🔒</span>
-              <span class="world-lock-cost">🪙 ${world.unlockCoins.toLocaleString()}</span>
-            </div>
-          ` : ''}
+        <img src="${previewImg}" alt="${world.name}" class="world-card-full-img" onerror="this.style.display='none'">
+        <div class="world-card-vignette"></div>
+        
+        <div class="world-card-icon-badge">${worldIcon}</div>
+        
+        <div class="world-card-status-badge ${isSelected ? 'active-badge' : (isUnlocked ? 'unlocked-badge' : 'locked-badge')}">
+          ${isSelected ? '✨ Active' : (isUnlocked ? '✓' : `🔒 Lv.${world.unlockLevel}`)}
         </div>
-        <div class="world-card-info">
-          <h3 class="world-card-title">${world.name}</h3>
-          <div class="world-card-stats-chips">
-            <span>⚡ x${world.speedModifier}</span>
-            <span style="color: var(--color-gold);">🪙 +${Math.round((world.coinDensity - 1) * 100)}%</span>
+
+        ${!isUnlocked ? `
+          <div class="world-card-lock-overlay">
+            <span class="world-lock-icon">🔒</span>
+            <span class="world-lock-cost">🪙 ${world.unlockCoins.toLocaleString()}</span>
           </div>
-          <div class="world-card-action">
-            ${isSelected ? '<button class="btn-world-action btn-selected" disabled>✓ ACTIVE</button>' : 
-              (isUnlocked ? `<button class="btn-world-action btn-select-world" data-id="${world.id}">SELECT</button>` :
-               `<button class="btn-world-action btn-unlock-world" data-id="${world.id}">UNLOCK</button>`)}
-          </div>
+        ` : ''}
+
+        <div class="world-card-toggle-info">
+          <span class="world-toggle-name">${world.name}</span>
+          <span class="world-toggle-stats">⚡ x${world.speedModifier} • 🪙 +${Math.round((world.coinDensity - 1) * 100)}%</span>
         </div>
       `;
 
-      // Full card click interaction
+      // Full card click interaction (toggle select & feedback)
       card.onclick = () => {
-        if (isSelected) return;
+        if (isSelected) {
+          this.showToast(`${worldIcon} ${world.name} (Active World)`, "gold");
+          return;
+        }
         if (isUnlocked) {
           state.selectedWorld = world.id;
           WonderProgression.saveState();
