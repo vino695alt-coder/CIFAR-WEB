@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Wonder Dash: Magic World - 3D Mobile Runner</title>
+  <meta name="description" content="Wonder Dash: Magic World - An original all-ages family-friendly 3D casual endless runner mobile adventure game.">
+  <meta name="theme-color" content="#0f1423">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Local Three.js 3D Graphics Engine (Offline & Fast) -->
+  <script src="js/lib/three.min.js"></script>
+</head>
+<body>
+
+  <div id="app-container">
+    <!-- Floating Device Frame Toggle for Mobile Preview & Testing -->
+    <div class="dev-floating-controls">
+      <button id="btn-toggle-frame" class="btn-dev-toggle">📱 Toggle Device Frame</button>
+    </div>
+
+    <!-- Main Mobile Device Frame -->
+    <div id="mobile-device-frame" class="mobile-device-frame">
+      
+      <!-- Notch Simulator -->
+      <div class="device-notch">
+        <div class="notch-speaker"></div>
+        <div class="notch-camera"></div>
+      </div>
+
+      <!-- 3D Three.js WebGL Canvas Container -->
+      <div id="game-canvas-container"></div>
+
+      <!-- Top Currency & Level Bar (Visible on all menu screens) -->
+      <div class="game-top-bar">
+        <div class="currency-group">
+          <div class="currency-pill gold">
+            <span>🪙</span>
+            <span class="val-coins">1,000</span>
+          </div>
+          <div class="currency-pill gems">
+            <span>💎</span>
+            <span class="val-gems">25</span>
+          </div>
+        </div>
+        <div class="player-level-badge val-player-level">Lv.1</div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 1: MAIN MENU -->
+      <!-- ================================================================= -->
+      <div id="screen-menu" class="game-screen active">
+        <div class="menu-brand-header">
+          <h1 class="menu-title-logo">WONDER DASH</h1>
+          <div class="menu-sub-title">Magic World</div>
+        </div>
+
+        <!-- Interactive 3D Hero Carousel on Main Screen (Clean Unobstructed View) -->
+        <div class="menu-hero-carousel-container">
+          <button id="btn-menu-hero-prev" class="btn-hero-carousel-nav" aria-label="Previous Hero">‹</button>
+          
+          <!-- Touch/Click Area to inspect character info on demand -->
+          <div class="hero-touch-target" id="btn-hero-touch-target">
+            <div class="hero-name-pill">
+              <span id="menu-hero-icon">🦊</span>
+              <strong id="menu-hero-name">Milo</strong>
+              <span class="hero-info-chip">ℹ️ Info</span>
+            </div>
+          </div>
+
+          <button id="btn-menu-hero-next" class="btn-hero-carousel-nav" aria-label="Next Hero">›</button>
+        </div>
+
+        <div class="menu-main-action">
+          <!-- Active World Selector Bar with Thumbnail Preview -->
+          <div class="menu-world-selector-bar" id="btn-menu-world-select">
+            <div class="world-thumb-preview-mini">
+              <img id="menu-selected-world-img" src="assets/images/world_enchanted_forest.jpg" alt="World" class="world-thumb-img-mini" onerror="this.style.display='none'">
+              <span class="world-tag-icon">🌲</span>
+            </div>
+            <div class="world-tag-details">
+              <span class="world-tag-label">Current Magic World:</span>
+              <strong id="menu-selected-world-name">Enchanted Forest</strong>
+            </div>
+            <span class="world-tag-arrow">Explore ❯</span>
+          </div>
+
+          <button id="btn-play-main" class="btn-play-big">
+            <span>PLAY NOW</span>
+            <span>▶</span>
+          </button>
+
+          <div class="menu-grid-nav">
+            <button id="btn-nav-characters" class="nav-icon-btn featured-nav">
+              <span class="btn-icon">🦊</span>
+              <span class="btn-label">Heroes</span>
+            </button>
+            <button id="btn-nav-worlds" class="nav-icon-btn featured-nav">
+              <span class="btn-icon">🌍</span>
+              <span class="btn-label">Worlds</span>
+            </button>
+            <button id="btn-nav-shop" class="nav-icon-btn featured-nav">
+              <span class="btn-icon">⚡</span>
+              <span class="btn-label">Upgrades</span>
+            </button>
+            <button id="btn-nav-missions" class="nav-icon-btn">
+              <span class="btn-icon">📜</span>
+              <span class="btn-label">Missions</span>
+            </button>
+            <button id="btn-nav-achievements" class="nav-icon-btn">
+              <span class="btn-icon">🏆</span>
+              <span class="btn-label">Trophies</span>
+            </button>
+            <button id="btn-nav-daily" class="nav-icon-btn">
+              <span class="btn-icon">📅</span>
+              <span class="btn-label">Daily</span>
+              <span id="daily-reward-badge" class="badge-notification">!</span>
+            </button>
+            <button id="btn-nav-leaderboard" class="nav-icon-btn">
+              <span class="btn-icon">⭐</span>
+              <span class="btn-label">Scores</span>
+            </button>
+            <button id="btn-nav-settings" class="nav-icon-btn">
+              <span class="btn-icon">⚙️</span>
+              <span class="btn-label">Settings</span>
+            </button>
+          </div>
+
+          <div style="width: 100%; display: flex; justify-content: center; margin-top: 4px;">
+            <button id="btn-nav-admin" style="background: none; border: none; color: #64748b; font-size: 11px; font-weight: 700; cursor: pointer;">
+              🔧 Studio Admin Portal & Analytics
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 2: WORLDS SELECTOR -->
+      <!-- ================================================================= -->
+      <div id="screen-worlds" class="game-screen">
+        <div class="screen-header-bar">
+          <button class="btn-screen-back btn-back-to-menu">‹</button>
+          <h2 class="screen-title">Magical Worlds</h2>
+          <div style="width: 42px;"></div>
+        </div>
+        <div class="screen-scroll-content" id="worlds-grid-container">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 3: CHARACTERS ROSTER -->
+      <!-- ================================================================= -->
+      <div id="screen-characters" class="game-screen">
+        <div class="screen-header-bar">
+          <button class="btn-screen-back btn-back-to-menu">‹</button>
+          <h2 class="screen-title">Choose Hero</h2>
+          <div style="width: 42px;"></div>
+        </div>
+        <div class="screen-scroll-content" id="characters-roster-container">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 4: SHOP & UPGRADES -->
+      <!-- ================================================================= -->
+      <div id="screen-shop" class="game-screen">
+        <div class="screen-header-bar">
+          <button class="btn-screen-back btn-back-to-menu">‹</button>
+          <h2 class="screen-title">Magic Shop</h2>
+          <div style="width: 42px;"></div>
+        </div>
+        <div class="screen-scroll-content">
+          <h3 class="shop-section-title">⚡ Power-Up Upgrades</h3>
+          <div id="shop-upgrades-list" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Dynamically populated -->
+          </div>
+
+          <h3 class="shop-section-title" style="margin-top: 14px;">💎 Store Bundles & IAP</h3>
+          <div id="shop-iap-list" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 5: MISSIONS -->
+      <!-- ================================================================= -->
+      <div id="screen-missions" class="game-screen">
+        <div class="screen-header-bar">
+          <button class="btn-screen-back btn-back-to-menu">‹</button>
+          <h2 class="screen-title">Daily Missions</h2>
+          <div style="width: 42px;"></div>
+        </div>
+        <div class="screen-scroll-content" id="missions-list-container">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 6: ACHIEVEMENTS -->
+      <!-- ================================================================= -->
+      <div id="screen-achievements" class="game-screen">
+        <div class="screen-header-bar">
+          <button class="btn-screen-back btn-back-to-menu">‹</button>
+          <h2 class="screen-title">Achievements</h2>
+          <div style="width: 42px;"></div>
+        </div>
+        <div class="screen-scroll-content" id="achievements-list-container">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 7: DAILY LOGIN REWARDS -->
+      <!-- ================================================================= -->
+      <div id="screen-daily" class="game-screen">
+        <div class="screen-header-bar">
+          <button class="btn-screen-back btn-back-to-menu">‹</button>
+          <h2 class="screen-title">7-Day Streak</h2>
+          <div style="width: 42px;"></div>
+        </div>
+        <div class="screen-scroll-content">
+          <div class="daily-grid" id="daily-grid-container">
+            <!-- Dynamically populated -->
+          </div>
+          <button id="btn-daily-2x-ad" class="btn-gameover-ad" style="margin-top: 12px;">
+            <span>📺 Double Daily Reward (Watch Ad)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 8: LEADERBOARD -->
+      <!-- ================================================================= -->
+      <div id="screen-leaderboard" class="game-screen">
+        <div class="screen-header-bar">
+          <button class="btn-screen-back btn-back-to-menu">‹</button>
+          <h2 class="screen-title">Hall of Fame</h2>
+          <div style="width: 42px;"></div>
+        </div>
+        <div class="screen-scroll-content" id="leaderboard-list-container">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 9: SETTINGS -->
+      <!-- ================================================================= -->
+      <div id="screen-settings" class="game-screen">
+        <div class="screen-header-bar">
+          <button class="btn-screen-back btn-back-to-menu">‹</button>
+          <h2 class="screen-title">Settings</h2>
+          <div style="width: 42px;"></div>
+        </div>
+        <div class="screen-scroll-content">
+          <div class="settings-group">
+            <div class="settings-row" id="row-toggle-mute" style="cursor: pointer;">
+              <div>
+                <span style="font-weight: 800; display: block;">Mute All Audio</span>
+                <span id="label-mute-status" style="font-size: 11px; color: #2ecc71; font-weight: 700;">Sound: ACTIVE 🔊</span>
+              </div>
+              <label class="switch-toggle" onclick="event.stopPropagation()">
+                <input type="checkbox" id="toggle-sound-mute">
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+            <div class="settings-row">
+              <span>Music Volume</span>
+              <input type="range" id="slider-bgm-volume" class="settings-slider" min="0" max="100">
+            </div>
+            <div class="settings-row">
+              <span>Sound Effects</span>
+              <input type="range" id="slider-sfx-volume" class="settings-slider" min="0" max="100">
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <div class="settings-row">
+              <span>Family Safety Mode</span>
+              <span style="color: #2ecc71; font-size: 12px;">✓ COPPA Safe</span>
+            </div>
+            <div class="settings-row">
+              <span>Target FPS</span>
+              <span style="color: var(--color-cyan); font-size: 12px;">60 FPS (Ultra)</span>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <button id="btn-restore-purchases" class="btn-select-world">Restore In-App Purchases</button>
+            <button id="btn-view-privacy" class="btn-screen-back" style="width: 100%; border-radius: 14px; font-size: 13px;">View Privacy Policy & Terms</button>
+            <button id="btn-reset-data" style="background: none; border: 1px solid #e74c3c; color: #e74c3c; padding: 10px; border-radius: 14px; font-weight: 800; cursor: pointer;">
+              Reset Game Save Data
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 10: STUDIO ADMIN PORTAL -->
+      <!-- ================================================================= -->
+      <div id="screen-admin" class="game-screen">
+        <div class="screen-header-bar">
+          <button class="btn-screen-back btn-back-to-menu">‹</button>
+          <h2 class="screen-title">Studio Admin</h2>
+          <div style="width: 42px;"></div>
+        </div>
+        <div class="screen-scroll-content">
+          <div class="admin-metrics-grid">
+            <div class="metric-card">
+              <span>EST. DAU</span>
+              <strong id="admin-stat-dau">1,240</strong>
+            </div>
+            <div class="metric-card">
+              <span>SESSIONS</span>
+              <strong id="admin-stat-sessions">1</strong>
+            </div>
+            <div class="metric-card">
+              <span>AD VIEWS</span>
+              <strong id="admin-stat-ad-views">0</strong>
+            </div>
+            <div class="metric-card">
+              <span>REWARDED WATCH</span>
+              <strong id="admin-stat-rewarded-views">0</strong>
+            </div>
+          </div>
+
+          <h4 style="color: var(--color-gold); font-size: 13px; margin-top: 8px;">Developer Cheats & Testing Tools</h4>
+          <button id="btn-admin-add-coins" class="admin-cheat-btn">🪙 Grant +10,000 Coins</button>
+          <button id="btn-admin-add-gems" class="admin-cheat-btn">💎 Grant +250 Magic Gems</button>
+          <button id="btn-admin-unlock-worlds" class="admin-cheat-btn">🌍 Unlock All 8 Worlds</button>
+          <button id="btn-admin-unlock-chars" class="admin-cheat-btn">🦊 Unlock All 5 Heroes & Skins</button>
+          <button id="btn-admin-max-powerups" class="admin-cheat-btn">⚡ Max Out All Power-ups (Lv.5)</button>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- SCREEN 11: IN-GAME HUD -->
+      <!-- ================================================================= -->
+      <div id="screen-hud" class="game-screen">
+        <div class="hud-top-stats">
+          <div class="hud-score-box">
+            <div class="hud-score-num" id="hud-score">0</div>
+            <div class="hud-dist-tag" id="hud-distance">0m</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; pointer-events: auto;">
+            <div class="currency-pill gold">🪙 <span id="hud-coins">0</span></div>
+            <div class="currency-pill gems">💎 <span id="hud-gems">0</span></div>
+            <button id="btn-hud-pause" class="btn-screen-back" style="width: 36px; height: 36px; font-size: 14px;">❚❚</button>
+          </div>
+        </div>
+
+        <!-- Power-up Active Timers -->
+        <div class="hud-powerup-bars">
+          <div id="hud-pu-magnet" class="hud-pu-item">
+            <span>🧲</span>
+            <div class="hud-pu-bg"><div class="hud-pu-fill" style="width: 100%;"></div></div>
+          </div>
+          <div id="hud-pu-shield" class="hud-pu-item">
+            <span>🛡️</span>
+            <div class="hud-pu-bg"><div class="hud-pu-fill" style="width: 100%;"></div></div>
+          </div>
+          <div id="hud-pu-wings" class="hud-pu-item">
+            <span>🪽</span>
+            <div class="hud-pu-bg"><div class="hud-pu-fill" style="width: 100%;"></div></div>
+          </div>
+          <div id="hud-pu-multiplier" class="hud-pu-item">
+            <span>⭐</span>
+            <div class="hud-pu-bg"><div class="hud-pu-fill" style="width: 100%;"></div></div>
+          </div>
+        </div>
+
+        <!-- On-Screen Touch Controls (Swipe also supported) -->
+        <div class="hud-touch-controls">
+          <div class="touch-cluster-horizontal">
+            <button id="btn-touch-left" class="btn-touch-action">◀</button>
+            <button id="btn-touch-right" class="btn-touch-action">▶</button>
+          </div>
+          <div class="touch-cluster-vertical">
+            <button id="btn-touch-jump" class="btn-touch-action">▲ JUMP</button>
+            <button id="btn-touch-slide" class="btn-touch-action">▼ SLIDE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- HERO INFO MODAL OVERLAY (Opens when character is tapped/touched) -->
+      <!-- ================================================================= -->
+      <div id="dialog-hero-info" class="dialog-overlay">
+        <div class="dialog-card hero-info-card">
+          <button id="btn-hero-info-close" class="btn-dialog-close">✕</button>
+          <div class="hero-modal-header">
+            <span id="hero-info-icon" class="hero-modal-icon">🦊</span>
+            <div class="hero-modal-title-wrap">
+              <h3 id="hero-info-title" class="hero-modal-title">Milo the Fox</h3>
+              <span id="hero-info-role" class="hero-modal-role">Adventurous Aviator</span>
+            </div>
+          </div>
+          <p id="hero-info-desc" class="hero-modal-desc">Fast, brave, and naturally curious! Equipped with his golden aviation goggles.</p>
+          <div class="hero-modal-perk-box">
+            <span class="perk-box-tag">SPECIAL PERK</span>
+            <strong id="hero-info-perk" class="perk-box-name">✨ Magnet Master: +20% Star Magnet Duration & +10% Coin Value</strong>
+          </div>
+          <div class="hero-modal-footer-action">
+            <button id="btn-hero-info-roster" class="btn-play-big" style="width: 100%; height: 48px; font-size: 16px;">
+              <span>CHOOSE / CUSTOMIZE HERO</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- PAUSE DIALOG OVERLAY -->
+      <!-- ================================================================= -->
+      <div id="dialog-pause" class="dialog-overlay">
+        <div class="dialog-card">
+          <h2 class="gameover-title" style="color: var(--color-cyan);">GAME PAUSED</h2>
+          <p style="font-size: 13px; color: #94a3b8;">Take a breath, hero!</p>
+          <button id="btn-pause-resume" class="btn-play-big" style="width: 100%; height: 52px; font-size: 19px;">▶ RESUME RUN</button>
+          <button id="btn-pause-restart" class="btn-select-world" style="padding: 12px; width: 100%; font-size: 14px;">🔄 Restart Run</button>
+          <button id="btn-pause-quit" class="btn-screen-back" style="width: 100%; border-radius: 14px; font-size: 14px; padding: 12px;">🏠 Quit to Main Menu</button>
+        </div>
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- GAME OVER DIALOG OVERLAY -->
+      <!-- ================================================================= -->
+      <div id="dialog-gameover" class="dialog-overlay">
+        <div class="dialog-card">
+          <h2 class="gameover-title">RUN COMPLETED!</h2>
+          <div class="gameover-stats-grid">
+            <div class="stat-tile">
+              <span>SCORE</span>
+              <strong id="gameover-score">0</strong>
+            </div>
+            <div class="stat-tile">
+              <span>BEST SCORE</span>
+              <strong id="gameover-best" style="color: var(--color-gold);">0</strong>
+            </div>
+            <div class="stat-tile">
+              <span>COINS EARNED</span>
+              <strong id="gameover-coins" style="color: #f1c40f;">+0</strong>
+            </div>
+            <div class="stat-tile">
+              <span>GEMS COLLECTED</span>
+              <strong id="gameover-gems" style="color: #9b59b6;">+0</strong>
+            </div>
+            <div class="stat-tile">
+              <span>DISTANCE</span>
+              <strong id="gameover-distance">0m</strong>
+            </div>
+            <div class="stat-tile">
+              <span>XP GAINED</span>
+              <strong id="gameover-xp" style="color: #2ecc71;">+0 XP</strong>
+            </div>
+          </div>
+
+          <!-- Rewarded Video Action Buttons -->
+          <button id="btn-gameover-revive" class="btn-gameover-ad revive">
+            <span>❤️ REVIVE RUN (1 Left)</span>
+          </button>
+          <button id="btn-gameover-double" class="btn-gameover-ad">
+            <span>📺 2X COINS (+0)</span>
+          </button>
+
+          <button id="btn-gameover-replay" class="btn-play-big" style="width: 100%; height: 52px; font-size: 19px;">🔄 PLAY AGAIN</button>
+          <button id="btn-gameover-home" class="btn-screen-back" style="width: 100%; border-radius: 14px; font-size: 14px; padding: 12px;">🏠 Back to Main Menu</button>
+        </div>
+      </div>
+
+      <!-- AdMob Sticky Banner Container (Family Safe) -->
+      <div id="admob-banner-container">
+        <span class="banner-ad-tag">AdMob</span>
+        <span class="banner-ad-content">🌟 Wonder Dash: Play Daily for Free Rewards!</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Game Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/monetization.js"></script>
+  <script src="js/progression.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
