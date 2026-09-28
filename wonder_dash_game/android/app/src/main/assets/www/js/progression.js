@@ -347,7 +347,10 @@ class WonderProgressionSystem {
       if (window.showToast) {
         window.showToast(`🏆 Achievement Unlocked: ${ach.title}!`, "gold");
       }
-      WonderAudio.playLevelUp();
+      if (window.WonderAudio) {
+        if (typeof WonderAudio.playLevelUp === "function") WonderAudio.playLevelUp();
+        else if (typeof WonderAudio.playChestOpen === "function") WonderAudio.playChestOpen();
+      }
     }
     this.saveState();
   }

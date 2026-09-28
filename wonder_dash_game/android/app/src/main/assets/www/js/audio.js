@@ -378,6 +378,33 @@ class WonderAudioEngine {
     });
   }
 
+  playLevelUp() {
+    this.initContext();
+    if (!this.ctx || this.isMuted) return;
+    const now = this.ctx.currentTime;
+    // Triumphant rising fanfare & stardust chords
+    const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50, 1318.51];
+    notes.forEach((freq, idx) => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = (idx >= notes.length - 2) ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(freq, now + idx * 0.06);
+
+      gain.gain.setValueAtTime(0.28, now + idx * 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.5);
+
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+
+      osc.start(now + idx * 0.06);
+      osc.stop(now + idx * 0.06 + 0.55);
+    });
+  }
+
+  playClaim() {
+    this.playChestOpen();
+  }
+
   // ----------------------------------------------------
   // PROCEDURAL BACKGROUND MUSIC GENERATOR
   // ----------------------------------------------------
